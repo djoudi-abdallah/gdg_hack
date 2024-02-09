@@ -6,6 +6,24 @@ exports.createSubmission = async (req, res) => {
   try {
     const { teamId, projectTitle, description, attachments, challengeId } = req.body;
 
+    // Extract the user type from the token
+    const userType = req.user.typeUser; // Assuming the user type is stored in req.user
+
+    // If the user type is "participant", check if they are a team lead
+    if (userType === 'participant') {
+      // Find the participant using the user ID from the token
+      const participant = await prisma.participant.findUnique({
+        where: { userid: req.user.id }, // Assuming the user ID is stored in req.user.id
+        include: { team: true }, // Include the associated team
+      });
+
+      // If the participant is not a team lead, return an error
+      if (!participant || !participant.isTeamlead || !participant.team || participant.team.id !== teamId) {
+        return res.status(403).json({ error: 'Only team leads can create submissions for their team.' });
+      }
+    }
+
+    // Create the submission
     const submission = await prisma.submission.create({
       data: {
         team: { connect: { id: teamId } },

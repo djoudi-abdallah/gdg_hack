@@ -20,7 +20,7 @@ model User {
   lastName      String?   // Last name of the user
   profession    String?   // Profession of the user
   dateOfBirth   DateTime?
-  isAdmin  Boolean @default(false)  
+  typeUser String? 
   participant  Participant?
   judge Judge?
   mentor Mentor?
@@ -45,12 +45,14 @@ model Event {
   critere Critere[]
 }
 
+
+
 model Team {
   id       Int      @id @default(autoincrement())
   teamName String
   event    Event    @relation(fields: [eventId], references: [id])// Assuming teams are associated with an event
   eventId Int
-  submissions Submission[]
+  submissions Submission?
   participant Participant[]
   critere Critere[]
 }
@@ -58,7 +60,7 @@ model Team {
 model Submission {
   id            Int      @id @default(autoincrement())
   team          Team  @relation(fields: [teamid], references: [id])
-  teamid       Int     // Assuming submissions are associated with a team
+  teamid       Int     @unique// Assuming submissions are associated with a team
   projectTitle  String
   description   String
   attachments   attachment[] // Array of strings to store URLs of attachment files
@@ -95,7 +97,8 @@ model Participant {
   email    String   @unique
   skills   String[]
   interests String[]
-  team     Team[]   // If participants can belong to a team
+  team     Team[]  
+  isTeamlead Boolean @default(false) // If participants can belong to a team
   event    Event[]  // If participants are associated with an event
   user     User @relation(fields: [userid], references: [id])
   userid Int @unique // If participants have a user profile
@@ -141,6 +144,7 @@ model Challenge {
   eventid Int
   criteres      Critere[]
   submission Submission[]
+
 }
 
 model Critere {

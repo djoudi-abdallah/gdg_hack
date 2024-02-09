@@ -29,7 +29,7 @@ const adminMiddleware = async (req, res, next) => {
         where: { id: userId },
       });
 
-      if (user && user.isAdmin) {
+      if (user && user.typeUser==="admin") {
         next(); // User is an admin, continue to the next middleware or route
       } else {
         res.status(403).json({ error: "Access denied. You are not an admin." });

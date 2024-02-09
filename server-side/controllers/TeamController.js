@@ -20,16 +20,22 @@ exports.createTeam = async (req, res) => {
   }
 };
 
-// Retrieve all teams
+
+
 exports.getAllTeams = async (req, res) => {
   try {
-    const teams = await prisma.team.findMany();
+    const teams = await prisma.team.findMany({
+      include: {
+        submissions: true, // Include the submissions associated with each team
+      },
+    });
     res.status(200).json(teams);
   } catch (error) {
     console.error('Error retrieving teams:', error);
     res.status(500).json({ error: 'Unable to retrieve teams.' });
   }
 };
+
 
 // Retrieve a specific team by ID
 exports.getTeamById = async (req, res) => {
@@ -38,6 +44,9 @@ exports.getTeamById = async (req, res) => {
 
     const team = await prisma.team.findUnique({
       where: { id: teamId },
+      include: {
+        submissions: true // Include the associated submissions
+      }
     });
 
     if (!team) {
@@ -50,6 +59,7 @@ exports.getTeamById = async (req, res) => {
     res.status(500).json({ error: 'Unable to retrieve team.' });
   }
 };
+
 
 // Update an existing team
 exports.updateTeam = async (req, res) => {
