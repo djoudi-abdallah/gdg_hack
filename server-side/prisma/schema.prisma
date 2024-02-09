@@ -9,3 +9,157 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique
+  email         String    @unique
+  password      String
+  phoneNumber   String?
+  firstName     String?   // First name of the user
+  lastName      String?   // Last name of the user
+  profession    String?   // Profession of the user
+  dateOfBirth   DateTime?
+  isAdmin  Boolean @default(false)  
+  participant  Participant?
+  judge Judge?
+  mentor Mentor?
+}
+
+model Event {
+  id            Int       @id @default(autoincrement())
+  eventName     String
+  eventType     String
+  dateBegin     DateTime
+  dateEnd       DateTime
+  location      String
+  description   String
+  teams         Team[]
+  challenges    Challenge[]
+  particepentsfeedbacks Participantfeedback[]
+  judge Judge[]
+  participant Participant[]
+  publicComment PublicComment[]
+  mentor Mentor[]
+  judgefeedback JudgeFeedback[]
+  critere Critere[]
+}
+
+model Team {
+  id       Int      @id @default(autoincrement())
+  teamName String
+  event    Event    @relation(fields: [eventId], references: [id])// Assuming teams are associated with an event
+  eventId Int
+  submissions Submission[]
+  participant Participant[]
+  critere Critere[]
+}
+
+model Submission {
+  id            Int      @id @default(autoincrement())
+  team          Team  @relation(fields: [teamid], references: [id])
+  teamid       Int     // Assuming submissions are associated with a team
+  projectTitle  String
+  description   String
+  attachments   attachment[] // Array of strings to store URLs of attachment files
+  challenge     Challenge @relation(fields: [challengeid], references: [id]) // Reference to the associated challenge
+  challengeid    Int
+  publickcomment PublicComment[]
+  judgefeedback JudgeFeedback?
+ 
+}
+
+model attachment{
+  id Int @id @default(autoincrement())
+  name String
+  url String
+  submition Submission @relation(fields: [submisionid], references: [id])
+  submisionid Int
+}
+model Judge {
+  id       Int      @id @default(autoincrement())
+  name     String
+  email    String   @unique
+  fields   String[] // Assuming fields represent areas of expertise
+  event    Event  @relation(fields: [eventid], references: [id])
+  eventid     Int
+  user     User @relation(fields: [userid], references: [id])
+  userid Int @unique // If judges have a user profile @unique
+  isLead   Boolean  @default(false) // Default value set to false
+  feedback JudgeFeedback[]
+}
+
+model Participant {
+  id       Int      @id @default(autoincrement())
+  name     String
+  email    String   @unique
+  skills   String[]
+  interests String[]
+  team     Team[]   // If participants can belong to a team
+  event    Event[]  // If participants are associated with an event
+  user     User @relation(fields: [userid], references: [id])
+  userid Int @unique // If participants have a user profile
+  feedback Participantfeedback[]
+}
+
+model Mentor {
+  id       Int      @id @default(autoincrement())
+  name     String
+  email    String   @unique
+  skills   String[] // Assuming skills represent areas of expertise
+  event    Event[]   // If mentors are associated with an event
+  user     User @relation(fields: [userid], references: [id])
+  userid Int  @unique // If mentors have a user profile
+}
+
+model JudgeFeedback {
+  id            Int       @id @default(autoincrement())
+  submission    Submission @relation(fields: [submissionid], references: [id])
+  submissionid Int @unique
+  judge         Judge @relation(fields: [judgeid], references: [id])
+  judgeid Int
+  event         Event @relation(fields: [eventid], references: [id])
+  eventid Int
+  comment       String?
+  rating        Int       @default(0)
+}
+
+model PublicComment {
+  id            Int       @id @default(autoincrement())
+ submission    Submission @relation(fields: [submissionid], references: [id])
+  submissionid Int
+ event  Event @relation(fields: [eventid], references: [id])
+  eventid Int
+  comment       String
+}
+
+model Challenge {
+  id            Int       @id @default(autoincrement())
+  title         String
+  description   String
+   event         Event @relation(fields: [eventid], references: [id])
+  eventid Int
+  criteres      Critere[]
+  submission Submission[]
+}
+
+model Critere {
+  id           Int        @id @default(autoincrement())
+  title        String
+  challenge    Challenge @relation(fields: [challengeid], references: [id]) // Assuming criteria are associated with a challenge
+  challengeid Int
+  team Team @relation(fields: [teamid], references: [id])
+  teamid Int @unique
+  note Int  @default(0)
+  event Event @relation(fields: [eventid], references: [id])
+  eventid Int @unique
+}
+
+model Participantfeedback {
+  id             Int       @id @default(autoincrement())
+  event     Event  @relation(fields: [eventid], references: [id])
+  eventid Int
+  participant    Participant @relation(fields: [participantid], references: [id])
+  participantid Int
+  feedback       String
+}
